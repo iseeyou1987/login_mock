@@ -1,0 +1,23 @@
+{
+  "name": "sina_login",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "dependencies": {
+    "co": "^4.5.4",
+    "cookie": "^0.1.2",
+    "debug": "^2.2.0",
+    "iconv-lite": "^0.4.8",
+    "koa": "^0.20.0",
+    "koa-router": "^4.3.2",
+    "lodash": "^3.8.0",
+    "thunkify": "^2.1.2",
+    "urllib": "^2.3.5"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "zhaolei@qeeniao.com",
+  "license": "ISC"
+}
