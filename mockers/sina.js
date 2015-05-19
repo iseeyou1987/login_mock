@@ -145,7 +145,10 @@ function *getCookie(username, password) {
 }
 
 module.exports = {
-  getCookie: co.wrap(getCookie)
+  getCookie: co.wrap(getCookie),
+  test: function (str) {
+    return /.*@sina\.com(\.cn)?$/.test(str);
+  }
 };
 
 //var username = 'qeeniao_test@sina.com';

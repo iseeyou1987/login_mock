@@ -1,12 +1,10 @@
 'use strict';
 
 var koa = require('koa');
-var router = require('koa-router');
+var router = require('./router');
 
 var app = koa();
 
-app.use(function* () {
-  this.body = 'TTTTTT';
-});
+app.use(router.routes());
 
 app.listen(3000);
