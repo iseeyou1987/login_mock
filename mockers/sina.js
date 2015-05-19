@@ -47,7 +47,7 @@ function *getCookie(username, password) {
     var RSAKey = new sinaSSOEncoder.RSAKey();
     RSAKey.setPublic(preResult.pubkey, "10001");
     return RSAKey.encrypt([preResult.servertime, preResult.nonce].join("\t") + "\n" + password);
-  }
+  };
   var loginArr = {
     entry: 'freemail',
     gateway: 1,
