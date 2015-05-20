@@ -145,7 +145,7 @@ function *getCookie(username, password) {
 }
 
 module.exports = {
-  getCookie: co.wrap(getCookie),
+  getCookie: getCookie,
   test: function (str) {
     return /.*@sina\.com(\.cn)?$/.test(str);
   }
