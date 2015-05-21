@@ -1,6 +1,6 @@
 'use strict';
 /**
- * 126邮箱登录
+ * yeah 邮箱登录 mail.yeah.net
  * @type {[type]}
  */
 var co = require('co');
@@ -42,7 +42,7 @@ function *doLogin(username,password){
     __cookies = __cookies.concat(response.headers['set-cookie'] || []);
   };
 
-  var entry_url = "https://mail.126.com/entry/cgi/ntesdoor?df=mail126_letter&from=web&funcid=loginone&iframe=1&language=-1&passtype=1&product=mail126&verifycookie=-1&net=failed&style=-1&race=-2_-2_-2_db&uid="+username+"&hid=10010102";
+  var entry_url = "https://mail.yeah.net/entry/cgi/ntesdoor?df=mail126_letter&from=web&funcid=loginone&iframe=1&language=-1&passtype=1&product=mail126&verifycookie=-1&net=failed&style=-1&race=-2_-2_-2_db&uid="+username+"&hid=10010102";
   var login_data = {
     'username':username,
     'password':password
@@ -63,8 +63,8 @@ function *doLogin(username,password){
   var res = yield request(mail_url,{
     method:'GET',
     headers:{
-      Referer: 'http://mail.126.com/entry/cgi/ntesdoor?df=loginjustnowmail126&funcid=loginjustnow&iframe=1',
-      Host: 'mail.126.com',
+      Referer: 'http://mail.yeah.net/entry/cgi/ntesdoor?df=loginjustnowmail126&funcid=loginjustnow&iframe=1',
+      Host: 'mail.yeah.net',
       Cookie: _ckstr(),
       'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.76 Safari/537.36'
     }
@@ -85,7 +85,7 @@ function *doLogin(username,password){
   }
 
   //收件箱--列表
-  var mail_url = 'http://mail.126.com/js6/s?sid='+sid+'&func=mbox:listMessages&LeftNavfolder1Click=1&mbox_folder_enter=1';
+  var mail_url = 'http://mail.yeah.net/js6/s?sid='+sid+'&func=mbox:listMessages&LeftNavfolder1Click=1&mbox_folder_enter=1';
 
   try{
     //请求参数
@@ -113,9 +113,9 @@ function *doLogin(username,password){
       method:'POST',
       data:search_data,
       headers:{
-        'Host':'mail.126.com',
-        'Origin':'http://mail.126.com',
-        'Referer':'http://mail.126.com/js6/main.jsp?sid='+sid,
+        'Host':'mail.yeah.net',
+        'Origin':'http://mail.yeah.net',
+        'Referer':'http://mail.yeah.net/js6/main.jsp?sid='+sid,
         'Cookie': _ckstr(),
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.76 Safari/537.36'
       }
@@ -167,8 +167,8 @@ function *doLogin(username,password){
     ]
   },{declaration: true});
 
-  var headers_url = 'http://mail.126.com/js6/s?sid='+sid+'&func=mbox:readMessage&l=read&action=read';
-  var html_url = 'http://mail.126.com/js6/read/readhtml.jsp?mid='+mid+'&font=15&color=1D6CA3';
+  var headers_url = 'http://mail.yeah.net/js6/s?sid='+sid+'&func=mbox:readMessage&l=read&action=read';
+  var html_url = 'http://mail.yeah.net/js6/read/readhtml.jsp?mid='+mid+'&font=15&color=1D6CA3';
   var detail_data = {
     'var':data
   }
@@ -176,9 +176,9 @@ function *doLogin(username,password){
     method:'POST',
     data:detail_data,
     headers:{
-      'Host':'mail.126.com',
+      'Host':'mail.yeah.net',
       'Cookie': _ckstr(),
-      'Referer':'http://mail.126.com/js6/main.jsp?sid='+sid+'&df=wm_switch',
+      'Referer':'http://mail.yeah.net/js6/main.jsp?sid='+sid+'&df=wm_switch',
       'User-Agent':_user_agent
     }
   });
@@ -192,9 +192,9 @@ function *doLogin(username,password){
   var html_res = yield request(html_url,{
     method:'GET',
     headers:{
-      'Host':'mail.126.com',
+      'Host':'mail.yeah.net',
       'Cookie': _ckstr(),
-      'Referer':'http://mail.126.com/js6/main.jsp?sid='+sid+'&df=wm_switch',
+      'Referer':'http://mail.yeah.net/js6/main.jsp?sid='+sid+'&df=wm_switch',
       'User-Agent':_user_agent
     }
   });
@@ -208,11 +208,11 @@ module.exports = {
   getCookie:co.wrap(doLogin)
 }
 
-// var username = 'xxxxxx';
-// var password = 'xxxxxx';
+var username = 'zhangdapeng89@yeah.net';
+var password = 'Azhangda890126';
 
-// var write = thunkify(fs.writeFile);
-// co.wrap(doLogin)(username,password).then(function(val){
-//   console.log(val);
-// });
+var write = thunkify(fs.writeFile);
+co.wrap(doLogin)(username,password).then(function(val){
+  console.log(val);
+});
 

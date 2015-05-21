@@ -1,6 +1,6 @@
 'use strict';
 /**
- * 126邮箱登录
+ * 163 邮箱登录 mail.163.com
  * @type {[type]}
  */
 var co = require('co');
@@ -42,7 +42,7 @@ function *doLogin(username,password){
     __cookies = __cookies.concat(response.headers['set-cookie'] || []);
   };
 
-  var entry_url = "https://mail.126.com/entry/cgi/ntesdoor?df=mail126_letter&from=web&funcid=loginone&iframe=1&language=-1&passtype=1&product=mail126&verifycookie=-1&net=failed&style=-1&race=-2_-2_-2_db&uid="+username+"&hid=10010102";
+  var entry_url = "https://mail.163.com/entry/cgi/ntesdoor?df=mail163_letter&from=web&funcid=loginone&iframe=1&language=-1&passtype=1&product=mail163&net=t&style=-1&race=34_32_42_bj&uid="+username+"&hid=10010102";
   var login_data = {
     'username':username,
     'password':password
@@ -63,10 +63,9 @@ function *doLogin(username,password){
   var res = yield request(mail_url,{
     method:'GET',
     headers:{
-      Referer: 'http://mail.126.com/entry/cgi/ntesdoor?df=loginjustnowmail126&funcid=loginjustnow&iframe=1',
-      Host: 'mail.126.com',
-      Cookie: _ckstr(),
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.76 Safari/537.36'
+      'Host': 'mail.163.com',
+      'Cookie': _ckstr(),
+      'User-Agent': _user_agent
     }
   });
 
@@ -85,7 +84,7 @@ function *doLogin(username,password){
   }
 
   //收件箱--列表
-  var mail_url = 'http://mail.126.com/js6/s?sid='+sid+'&func=mbox:listMessages&LeftNavfolder1Click=1&mbox_folder_enter=1';
+  var mail_url = 'http://mail.163.com/js6/s?sid='+sid+'&func=mbox:listMessages&TopTabReaderShow=1&TopTabLofterShow=1&welcome_welcomemodule_mailrecom_click=1&LeftNavfolder1Click=1&mbox_folder_enter=1';
 
   try{
     //请求参数
@@ -93,7 +92,7 @@ function *doLogin(username,password){
       {'int':[{_attr:{'name':'fid'}},1]},
       {'string':[{_attr:{'name':'order'}},'date']},
       {'boolean':[{_attr:{'name':'desc'}},true]},
-      {'int':[{_attr:{'name':'limit'}},100]},
+      {'int':[{_attr:{'name':'limit'}},20]},
       {'int':[{_attr:{'name':'start'}},0]},
       {'boolean':[{_attr:{'name':'skipLockedFolders'}},false]},
       {'string':[{_attr:{'name':'topFlag'}},'top']},
@@ -113,11 +112,11 @@ function *doLogin(username,password){
       method:'POST',
       data:search_data,
       headers:{
-        'Host':'mail.126.com',
-        'Origin':'http://mail.126.com',
-        'Referer':'http://mail.126.com/js6/main.jsp?sid='+sid,
+        'Host':'mail.163.com',
+        'Origin':'http://mail.163.com',
+        'Referer':'http://mail.163.com/js6/main.jsp?sid='+sid+'&df=mail163_letter',
         'Cookie': _ckstr(),
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.76 Safari/537.36'
+        'User-Agent': _user_agent
       }
     });
     var list = res[0].toString();
@@ -133,6 +132,7 @@ function *doLogin(username,password){
     console.log(err);
     return false;
   }
+
 
   //获取邮件内容
   //<?xml version="1.0"?>
@@ -167,8 +167,8 @@ function *doLogin(username,password){
     ]
   },{declaration: true});
 
-  var headers_url = 'http://mail.126.com/js6/s?sid='+sid+'&func=mbox:readMessage&l=read&action=read';
-  var html_url = 'http://mail.126.com/js6/read/readhtml.jsp?mid='+mid+'&font=15&color=1D6CA3';
+  var headers_url = 'http://mail.163.com/js6/s?sid='+sid+'&func=mbox:readMessage&l=read&action=read';
+  var html_url = 'http://mail.163.com/js6/read/readhtml.jsp?mid='+mid+'&font=15&color=1D6CA3';
   var detail_data = {
     'var':data
   }
@@ -176,9 +176,9 @@ function *doLogin(username,password){
     method:'POST',
     data:detail_data,
     headers:{
-      'Host':'mail.126.com',
+      'Host':'mail.163.com',
       'Cookie': _ckstr(),
-      'Referer':'http://mail.126.com/js6/main.jsp?sid='+sid+'&df=wm_switch',
+      'Referer':'http://mail.163.com/js6/main.jsp?sid='+sid+'&df=wm_switch',
       'User-Agent':_user_agent
     }
   });
@@ -192,9 +192,9 @@ function *doLogin(username,password){
   var html_res = yield request(html_url,{
     method:'GET',
     headers:{
-      'Host':'mail.126.com',
+      'Host':'mail.163.com',
       'Cookie': _ckstr(),
-      'Referer':'http://mail.126.com/js6/main.jsp?sid='+sid+'&df=wm_switch',
+      'Referer':'http://mail.163.com/js6/main.jsp?sid='+sid+'&df=wm_switch',
       'User-Agent':_user_agent
     }
   });
@@ -208,8 +208,8 @@ module.exports = {
   getCookie:co.wrap(doLogin)
 }
 
-// var username = 'xxxxxx';
-// var password = 'xxxxxx';
+// var username = 'xxxxxxxxx';
+// var password = 'xxxxxxxxxx';
 
 // var write = thunkify(fs.writeFile);
 // co.wrap(doLogin)(username,password).then(function(val){
