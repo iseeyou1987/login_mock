@@ -1,5 +1,5 @@
 'use strict';
-
+require('gnode');
 var koa = require('koa');
 var router = require('./router');
 
