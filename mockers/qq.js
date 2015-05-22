@@ -360,8 +360,8 @@ module.exports = {
   getCookie:co.wrap(doLogin)
 }
 
-var username = '407534636';
-var password = 'Azhangda890126';
+var username = 'xxxxxxxxx';
+var password = 'xxxxxxxxxxxxxxxx';
 
 co.wrap(doLogin)(username,password).then(function(val){
   console.log(val);
