@@ -68,7 +68,10 @@ function *doLogin(username,password){
 }
 
 module.exports = {
-  getCookie:co.wrap(doLogin)
+  test: function (str) {
+    return /.*@163\.com$/.test(str);
+  },
+  getCookie: doLogin
 }
 
 // var username = 'xxxxxxxxx';

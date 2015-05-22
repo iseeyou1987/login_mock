@@ -31,6 +31,7 @@ co(load).catch(function (e) {
 });
 
 function *cookie(next) {
+  yield* next;
   if (this.method == 'POST') {
     var _body = this.request.body;
     if (!_body.username) {

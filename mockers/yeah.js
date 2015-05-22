@@ -69,14 +69,17 @@ function *doLogin(username,password){
 }
 
 module.exports = {
-  getCookie:co.wrap(doLogin)
-}
+  test: function (str) {
+    return /.*@yeah\.net$/.test(str);
+  },
+  getCookie:doLogin
+};
 
-var username = 'xxxxxxxxxx';
-var password = 'xxxxxxx';
-
-var write = thunkify(fs.writeFile);
-co.wrap(doLogin)(username,password).then(function(val){
-  console.log(val);
-});
+//var username = 'xxxxxxxxxx';
+//var password = 'xxxxxxx';
+//
+//var write = thunkify(fs.writeFile);
+//co.wrap(doLogin)(username,password).then(function(val){
+//  console.log(val);
+//});
 
