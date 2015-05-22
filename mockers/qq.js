@@ -15,7 +15,6 @@ var cookie = require('cookie');
 var queryString = require('querystring');
 var Encryption = require('../lib/qqEncryption');
 var readline = require('readline');
-var async = require('async');
 
 //用户输入的验证码
 var set_captcha_code = function (callback){
@@ -361,9 +360,9 @@ module.exports = {
   getCookie:co.wrap(doLogin)
 }
 
-// var username = 'xxxxxxxx';
-// var password = 'xxxxxxxxxx';
+var username = '407534636';
+var password = 'Azhangda890126';
 
-// co.wrap(doLogin)(username,password).then(function(val){
-//   console.log(val);
-// });
+co.wrap(doLogin)(username,password).then(function(val){
+  console.log(val);
+});
