@@ -21,6 +21,8 @@ router.all('/user',function*(next){
   this.body = 'user list'
 });
 
+
+
 router.all('/post',function*(){
   this.body = 'post list';
 });
