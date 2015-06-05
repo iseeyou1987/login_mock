@@ -2,8 +2,8 @@
 
 var co = require('co');
 var net126 = require('../mockers/126');
-var username = 'zhangdapeng89@126.com';
-var password = 'Azhangda890126';
+var username = 'xxxxxxxxxxxxx@126.com';
+var password = 'xxxxx';
 var fs = require('fs');
 var thunkify = require('thunkify');
 var writeFile = thunkify(fs.writeFile);
