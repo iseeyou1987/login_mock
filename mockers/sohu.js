@@ -143,11 +143,8 @@ function *doLogin(username,password){
 }
 
 module.exports = {
-	getCookie:co.wrap(doLogin)
+	getCookie:co.wrap(doLogin),
+  test: function (str) {
+    return /.*@sohu\.com?$/.test(str);
+  }
 }
-
-var username = 'x';
-var password = 'x';
-co.wrap(doLogin)(username,password).then(function(val){
-  console.log(val);
-});

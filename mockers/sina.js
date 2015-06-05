@@ -28,7 +28,9 @@ function *getCookie(username, password) {
       }).join('; ');
   };
   var _addck = function (response) {
-    __cookies = __cookies.concat(response.headers['set-cookie'] || []);
+    if(typeof response.headers == 'object' && response.headers.hasOwnProperty('set-cookie')){
+      __cookies = __cookies.concat(response.headers['set-cookie'] || []);
+    }
   };
 
   // login
@@ -150,9 +152,3 @@ module.exports = {
     return /.*@sina\.com(\.cn)?$/.test(str);
   }
 };
-
-//var username = 'qeeniao_test@sina.com';
-//var password = 'qeeniao!QA';
-//var res = co.wrap(getCookie)(username, password).then(function (val) {
-//  console.log(val);
-//});

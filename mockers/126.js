@@ -47,6 +47,10 @@ function *doLogin(username,password){
   //==========================登录成功--获取跳转信息
   var redirect_url = res[0].toString();
   var match_res = redirect_url.match(/top.location.href = "(.*?)"/g);
+  if(match_res == null){
+    throw new Error('登录失败,账号或者密码错误！');
+    return ;
+  }
   var mail_url = match_res[0].replace(/top.location.href = "(.*?)"/g,'$1');
   var headers = res[1].headers;
   _addck(res[1]);
@@ -69,14 +73,8 @@ function *doLogin(username,password){
 }
 
 module.exports = {
-  getCookie:co.wrap(doLogin)
+  getCookie:co.wrap(doLogin),
+  test: function (str) {
+    return /.*@126\.com?$/.test(str);
+  }
 }
-
-// var username = 'xxxxxxxxxxxx';
-// var password = 'xxxxxxxxxx';
-
-// var write = thunkify(fs.writeFile);
-// co.wrap(doLogin)(username,password).then(function(val){
-//   console.log(val);
-// });
-

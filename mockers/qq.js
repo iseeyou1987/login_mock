@@ -357,12 +357,8 @@ function *doLogin(username,password){
 }
 
 module.exports = {
-  getCookie:co.wrap(doLogin)
+  getCookie:co.wrap(doLogin),
+  test: function (str) {
+    return /.*@qq\.com?$/.test(str);
+  }
 }
-
-var username = 'xxxxxxxxx';
-var password = 'xxxxxxxxxxxxxxxx';
-
-co.wrap(doLogin)(username,password).then(function(val){
-  console.log(val);
-});

@@ -68,14 +68,8 @@ function *doLogin(username,password){
 }
 
 module.exports = {
-  getCookie:co.wrap(doLogin)
+  getCookie:co.wrap(doLogin),
+  test: function (str) {
+    return /.*@163\.com?$/.test(str);
+  }
 }
-
-// var username = 'xxxxxxxxx';
-// var password = 'xxxxxx';
-
-// var write = thunkify(fs.writeFile);
-// co.wrap(doLogin)(username,password).then(function(val){
-//   console.log(val);
-// });
-
