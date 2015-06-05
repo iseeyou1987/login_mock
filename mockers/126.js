@@ -13,6 +13,7 @@ var cookie = require('cookie');
 var xml2js = require('xml2js');
 var parseString = thunkify(xml2js.parseString);
 
+
 function *doLogin(username,password){
   var _user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.76 Safari/537.36';
   var __cookies = [];
