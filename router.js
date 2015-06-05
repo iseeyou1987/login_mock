@@ -4,31 +4,12 @@
 
 var router = require('koa-router')();
 var koaBody = require('koa-body');
-var views = require('co-views');
+var queryString = require('querystring');
 
-var render= views(__dirname + '/views',{ map: { html: 'swig' }});
+router.post('/cookies',koaBody(),require('./api/cookie'));
 
 router.all('/',function *(next){
   this.body = 'Hello World!';
-});
-
-//视图调用
-router.all('/music',function*(next){
-  this.body = yield render('index',{'user':'durban'});
-});
-
-router.all('/user',function*(next){
-  this.body = 'user list'
-});
-
-
-
-router.all('/post',function*(){
-  this.body = 'post list';
-});
-
-router.all('/entries', koaBody(), function*(){
-
 });
 
 module.exports = router;
