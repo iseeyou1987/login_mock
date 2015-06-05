@@ -1,6 +1,6 @@
 'use strict';
 /**
- * yeah 邮箱登录 mail.yeah.net
+ * 139邮箱登录
  */
 var co = require('co');
 var thunkify = require('thunkify');
@@ -33,7 +33,7 @@ function *doLogin(username,password){
     __cookies = __cookies.concat(response.headers['set-cookie'] || []);
   };
 
-  var entry_url = "https://mail.yeah.net/entry/cgi/ntesdoor?df=mail126_letter&from=web&funcid=loginone&iframe=1&language=-1&passtype=1&product=mail126&verifycookie=-1&net=failed&style=-1&race=-2_-2_-2_db&uid="+username+"&hid=10010102";
+  var entry_url = "https://mail.126.com/entry/cgi/ntesdoor?df=mail126_letter&from=web&funcid=loginone&iframe=1&language=-1&passtype=1&product=mail126&verifycookie=-1&net=failed&style=-1&race=-2_-2_-2_db&uid="+username+"&hid=10010102";
   var login_data = {
     'username':username,
     'password':password
@@ -54,8 +54,8 @@ function *doLogin(username,password){
   var res = yield request(mail_url,{
     method:'GET',
     headers:{
-      Referer: 'http://mail.yeah.net/entry/cgi/ntesdoor?df=loginjustnowmail126&funcid=loginjustnow&iframe=1',
-      Host: 'mail.yeah.net',
+      Referer: 'http://mail.126.com/entry/cgi/ntesdoor?df=loginjustnowmail126&funcid=loginjustnow&iframe=1',
+      Host: 'mail.126.com',
       Cookie: _ckstr(),
       'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.76 Safari/537.36'
     }
@@ -71,6 +71,6 @@ function *doLogin(username,password){
 module.exports = {
   getCookie:co.wrap(doLogin),
   test: function (str) {
-    return /.*@yeah\.net?$/.test(str);
+    return /.*@139\.com?$/.test(str);
   }
 }

@@ -4,8 +4,12 @@
 
 var router = require('koa-router')();
 var koaBody = require('koa-body');
+var queryString = require('querystring');
 
-router.all('/cookie', koaBody(), require('./api/cookie'));
+router.post('/cookies',koaBody(),require('./api/cookie'));
+
+router.all('/',function *(next){
+  this.body = 'Hello World!';
+});
 
 module.exports = router;
-
