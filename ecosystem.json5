@@ -17,7 +17,9 @@
       "script"    : "app.js",
       "watch":true,
       "node_args":["--harmony"],
+      "log_date_format"  : "YYYY-MM-DD HH:mm Z",
       "error_file" : "./log/child-err.log",
+      "out_file":"./log/child-out.log",
       "env": {
         COMMON_VARIABLE: "true"
       },
