@@ -14,6 +14,5 @@ describe('Import Email Test',function(){
     }catch(e){
       debug(e.stack);
     }
-    
   });
 });
