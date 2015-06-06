@@ -4,6 +4,7 @@
   "description": "",
   "main": "app.js",
   "dependencies": {
+    "async": "^1.2.0",
     "co": "^4.5.4",
     "co-event-wrap": "^0.1.1",
     "co-mocha": "^1.1.0",
@@ -17,7 +18,9 @@
     "koa-logger": "^1.2.2",
     "koa-router": "^4.3.2",
     "lodash": "^3.9.1",
+    "log4js": "^0.6.25",
     "moment": "^2.10.3",
+    "mysql": "^2.7.0",
     "navigator": "^1.0.1",
     "swig": "^1.4.2",
     "thunkify": "^2.1.2",

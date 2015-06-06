@@ -9,5 +9,4 @@ describe('sina login ',function(){
     var res = yield sina.getCookie(username,password);
     console.log('res:',res);
   });
-
 });
