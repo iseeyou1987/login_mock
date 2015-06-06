@@ -6,14 +6,20 @@ var fs = require('fs');
 var thunkify = require('thunkify');
 var readFile = thunkify(fs.readFile);
 var eventWrap = require('co-event-wrap');
-var EventEmitter = require('events').EventEmitter;
 var should = require('should');
+var net126 = require('../mockers/126');
 
+var username = '';
+var password = '';
 
 describe('126 Fetcher',function(){
   it('test list',function *(){
-    var cookie = yield readFile(__dirname+'/126_cookie.txt');
-
+    try{
+      var cookie = yield net126.getCookie(username,password);
+    }catch(e){
+      console.log('Get Cookie Error:',e);
+    }
+    
     var fetcher = new Fetcher({'cookie':cookie});
     var ev = eventWrap(fetcher);
     ev.on('message', function* (data) {
@@ -31,6 +37,7 @@ describe('126 Fetcher',function(){
     ev.on('end', function* (data){
       console.log('End:',data);
     });
+
     var res = yield fetcher.getContent();
   });
 });
