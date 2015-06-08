@@ -228,6 +228,7 @@ var insertRecord = function(records,uid){
     });
     resolve(insert_records);
 
+
     // for(let i in records){
     //   var r = records[i];
     //   debug(r);
