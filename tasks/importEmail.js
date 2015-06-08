@@ -13,6 +13,7 @@ var debug = require('debug')('importEmail');
 var fog = require('../lib/fog');
 var Account_Record = require('../lib/account_record');
 var sqlBuilder = require('../lib/sql_builder');
+var async = require('async');
 
 var __mockerDir = __dirname + '/../mockers';
 var __mockers = [];
@@ -192,10 +193,12 @@ var confirmInsertData = function(records,uid){
 }
 
 var insertRecord = function(records,uid){
-  var insert_records = [];
+  
   return new Promise(function(resolve,reject){
-    records.forEach(function(r){
+    var insert_records = [];
+    async.mapSeries(records,function(r,callback){
       // var r = records[i];
+      
       debug(r);
       var money = r.money.replace(',','');
       new Account_Record({
@@ -206,7 +209,7 @@ var insertRecord = function(records,uid){
             'limit_money':r.limit_money,
             'expired_date':r.expired_date
           }
-      },function(err,res){
+      },function (err,res){
         if (err) {
           reject(err);
           return false;
@@ -223,10 +226,18 @@ var insertRecord = function(records,uid){
           rtime: r.rtime,
           mtime: r.mtime
         });
-
+        callback(null,[]);
       });
+
+    },function(err,res){
+      debug('async insert records:',insert_records);
+      resolve(insert_records);
     });
-    resolve(insert_records);
+
+    // records.forEach(function(r){
+      
+    // });
+    
 
 
     // for(let i in records){

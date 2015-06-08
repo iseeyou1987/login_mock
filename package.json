@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "dependencies": {
-    "async": "^1.2.0",
+    "async": "^1.2.1",
     "co": "^4.5.4",
     "co-event-wrap": "^0.1.1",
     "co-mocha": "^1.1.0",
