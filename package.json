@@ -22,6 +22,7 @@
     "moment": "^2.10.3",
     "mysql": "^2.7.0",
     "navigator": "^1.0.1",
+    "node-query": "^0.3.3",
     "swig": "^1.4.2",
     "thunkify": "^2.1.2",
     "urllib": "^2.3.5",

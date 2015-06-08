@@ -11,6 +11,8 @@ var moment = require('moment');
 var Parser = require('../lib/mail_parser');
 var debug = require('debug')('importEmail');
 var fog = require('../lib/fog');
+var Account_Record = require('../lib/account_record');
+var sqlBuilder = require('../lib/sql_builder');
 
 var __mockerDir = __dirname + '/../mockers';
 var __mockers = [];
@@ -66,7 +68,6 @@ var loadParsers = function(files){
   });
 }
 
-
 var getAccount = function(uid){
   return new Promise(function(resolve,reject){
     var sql = 'SELECT email,password,last_import FROM qeeniao.email_import_info WHERE user_id=${uid}';
@@ -97,6 +98,7 @@ var freshLastImport = function(uid) {
 var importData = function(records) {
   return new Promise(function(resolve,reject){
     var sql = sqlBuilder.makeInsertSql('qeeniao.record', records);
+    debug('Insert Sql:',sql);
     mysql.query(sql, function (err, res) {
       if(err) return reject(err);
       return resolve(res);
@@ -112,6 +114,7 @@ var importData = function(records) {
 var addUserCard = function(records){
   return new Promise(function(resolve,reject){
     var sql = sqlBuilder.makeInsertSql('qeeniao.user_has_card', records);
+    debug('Add User Card Sql:',sql);
     mysql.query(sql, function (err, res) {
       if(err) return reject(err);
       return resolve(res);
@@ -140,6 +143,130 @@ var parseBill = function(subject,contents){
   });
 }
 
+var confirmInsertData = function(records,uid){
+  return new Promise(function(resolve,reject){
+    var i = records[0];
+    var sql = 'SELECT id \
+              FROM qeeniao.user_has_card \
+              WHERE user_id = ${user_id} \
+                    and bank_name="${bank_name}" \
+                    and bank_account="${bank_account}" \
+                    and bank_code="${bank_code}" \
+                    and expired_date="${expired_date}"';
+
+    sql = _.template(sql)({
+      user_id: uid,
+      bank_account:i.bank_account,
+      bank_code:i.bank_code.substr(-4),
+      expired_date:i.expired_date ? i.expired_date : '0000-00-00',
+      bank_name:i.bank_name
+    });
+    mysql.query(sql,function(err,res){
+      if(err) {
+        reject(err);
+        return false;
+      }
+      if(!_.size(res)){
+        //添加用户银行卡记录
+        try{
+          var add_res = addUserCard({
+            'user_id':uid,
+            'bank_name':i.bank_name,
+            'bank_code':i.bank_code.substr(-4),
+            'bank_account':i.bank_account,
+            'expired_date':i.expired_date,
+            'limit_money':i.limit_money,
+            'mtime':moment().unix()
+          });
+          resolve(true);
+        }catch(e){
+          reject(e);
+          return false;
+        }
+        
+      }else{
+        resolve(false);
+      }
+    });
+  });
+}
+
+var insertRecord = function(records,uid){
+  var insert_records = [];
+  return new Promise(function(resolve,reject){
+    records.forEach(function(r){
+      // var r = records[i];
+      debug(r);
+      var money = r.money.replace(',','');
+      new Account_Record({
+          'uid':uid,record:{
+            'content':r.content,
+            'bank_name': r.bank_name,
+            'bank_code': r.bank_code,
+            'limit_money':r.limit_money,
+            'expired_date':r.expired_date
+          }
+      },function(err,res){
+        if (err) {
+          reject(err);
+          return false;
+        };
+
+        insert_records.push({
+          uuid: r.uuid,
+          user_id: uid,
+          rt_id: res.recordTypeId,
+          account_id: res.accountId,
+          money: money,
+          content: r.content,
+          ctime: r.ctime,
+          rtime: r.rtime,
+          mtime: r.mtime
+        });
+
+      });
+    });
+    resolve(insert_records);
+
+    // for(let i in records){
+    //   var r = records[i];
+    //   debug(r);
+    //   var money = r.money.replace(',','');
+    //   var AR = new Account_Record({
+    //       'uid':uid,record:{
+    //         'content':r.content,
+    //         'bank_name': r.bank_name,
+    //         'bank_code': r.bank_code,
+    //         'limit_money':r.limit_money,
+    //         'expired_date':r.expired_date
+    //       }
+    //   },function(err,res){
+    //     if (err) {
+    //       reject(err);
+    //       return false;
+    //     };
+
+    //     insert_records.push({
+    //       uuid: r.uuid,
+    //       user_id: uid,
+    //       rt_id: res.recordTypeId,
+    //       account_id: res.accountId,
+    //       money: money,
+    //       content: r.content,
+    //       ctime: r.ctime,
+    //       rtime: r.rtime,
+    //       mtime: r.mtime
+    //     });
+
+    //   });
+    // }
+    
+    // console.log('Insert:',insert_records);
+    // debug('Insert Records:',insert_records);
+    
+
+  });
+}
 /**
  * 导入指定用户的邮箱账单
  * @param {[type]} uid           [description]
@@ -196,17 +323,55 @@ function *run(uid){
     for(var i=0;i<__fetchers.length;i++){
       var m = __fetchers[i];
       if(m.test(username)){
+        
         var fetcher = new m.Fetcher({'cookie':cookie});
         var ev = eventWrap(fetcher);
         ev.on('message', function* (data) {
-          //判断邮箱是都需要进行
+
+          var parse_res = [];
           try{
-            var parse_res = yield parseBill(data['subject'],data['content']);
-            //处理逻辑
-            debug(parse_res);
+            parse_res = yield parseBill(data['subject'],data['content']);
           }catch(e){
             //parser Error 暂未处理  处理后会导致整个循环的parse终止
           }
+
+          //判断是否需要插入数据
+          var need_insert_state = false;
+          if(!_.isUndefined(parse_res['records'])){
+            try{
+              need_insert_state = yield confirmInsertData(parse_res['records'],uid);
+              debug('Need Insert Data State:',need_insert_state);
+            }catch(e){
+              throw(e);
+              return false;
+            }
+          }
+          
+
+          var insert_res = [];
+          if(need_insert_state){
+            try{
+              insert_res = yield insertRecord(parse_res['records'],uid);
+              debug('Insert Result:',insert_res);
+            }catch(e){
+              throw(e);
+              return false;
+            }
+          }
+
+          if(!_.isEmpty(insert_res)){
+            try{
+              var import_res = yield importData(insert_res);
+            }catch(e){
+              throw(e);
+              return false;
+            }
+          }
+          
+          //如果需要进行数据插入更新操作
+          //处理逻辑
+          debug(parse_res);
+          
         });
 
         ev.on('error', function* (error) {
@@ -214,6 +379,7 @@ function *run(uid){
         });
 
         ev.on('end', function* (data){
+          //更新
           return true;
         });
 
@@ -223,6 +389,9 @@ function *run(uid){
         break;
       }
     }
+
+    //fresh
+    var fresh_res = freshLastImport(uid);
 
     if(!fetcher_state){
       throw new Error('Fetcher Not Match');
