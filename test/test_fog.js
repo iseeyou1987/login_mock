@@ -7,7 +7,7 @@ var debug = require('debug')('fog');
 
 describe('Test Fog',function(){
   it('fog encode and decode',function*(){
-    var password_str = '123456';
+    var password_str = 'Azhangda890126';
     var encode_str = fog.encode(password_str);
     debug(encode_str);
     var decode_str = fog.decode(encode_str);

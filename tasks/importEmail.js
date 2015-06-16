@@ -14,6 +14,7 @@ var fog = require('../lib/fog');
 var Account_Record = require('../lib/account_record');
 var sqlBuilder = require('../lib/sql_builder');
 var async = require('async');
+var writeFile = thunkify(fs.writeFile);
 
 var __mockerDir = __dirname + '/../mockers';
 var __mockers = [];
@@ -146,7 +147,9 @@ var parseBill = function(subject,contents){
 
 var confirmInsertData = function(records,uid){
   return new Promise(function(resolve,reject){
+    debug(records);
     var i = records[0];
+    debug(i);
     var sql = 'SELECT id \
               FROM qeeniao.user_has_card \
               WHERE user_id = ${user_id} \
@@ -233,50 +236,6 @@ var insertRecord = function(records,uid){
       debug('async insert records:',insert_records);
       resolve(insert_records);
     });
-
-    // records.forEach(function(r){
-      
-    // });
-    
-
-
-    // for(let i in records){
-    //   var r = records[i];
-    //   debug(r);
-    //   var money = r.money.replace(',','');
-    //   var AR = new Account_Record({
-    //       'uid':uid,record:{
-    //         'content':r.content,
-    //         'bank_name': r.bank_name,
-    //         'bank_code': r.bank_code,
-    //         'limit_money':r.limit_money,
-    //         'expired_date':r.expired_date
-    //       }
-    //   },function(err,res){
-    //     if (err) {
-    //       reject(err);
-    //       return false;
-    //     };
-
-    //     insert_records.push({
-    //       uuid: r.uuid,
-    //       user_id: uid,
-    //       rt_id: res.recordTypeId,
-    //       account_id: res.accountId,
-    //       money: money,
-    //       content: r.content,
-    //       ctime: r.ctime,
-    //       rtime: r.rtime,
-    //       mtime: r.mtime
-    //     });
-
-    //   });
-    // }
-    
-    // console.log('Insert:',insert_records);
-    // debug('Insert Records:',insert_records);
-    
-
   });
 }
 /**
@@ -338,10 +297,14 @@ function *run(uid){
         
         var fetcher = new m.Fetcher({'cookie':cookie});
         var ev = eventWrap(fetcher);
+        var i = 0;
         ev.on('message', function* (data) {
-
+          i++;
           var parse_res = [];
           try{
+            debug('Email Subject:',data['subject']);
+            // debug('Email Content:',data['content']);
+            yield writeFile(__dirname + '/../test/data/data_'+i+'_html.txt',data['content']);
             parse_res = yield parseBill(data['subject'],data['content']);
           }catch(e){
             //parser Error 暂未处理  处理后会导致整个循环的parse终止
@@ -349,7 +312,8 @@ function *run(uid){
 
           //判断是否需要插入数据
           var need_insert_state = false;
-          if(!_.isUndefined(parse_res['records'])){
+          debug('parse_res:',parse_res);
+          if(!_.isUndefined(parse_res['records']) && !_.isEmpty(parse_res['records'])){
             try{
               need_insert_state = yield confirmInsertData(parse_res['records'],uid);
               debug('Need Insert Data State:',need_insert_state);
@@ -359,7 +323,6 @@ function *run(uid){
             }
           }
           
-
           var insert_res = [];
           if(need_insert_state){
             try{

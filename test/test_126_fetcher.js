@@ -1,6 +1,6 @@
 'use strict';
 
-var Fetcher = require('../lib/mail_fetcher/126');
+var Fetcher = require('../lib/mail_fetcher/126').Fetcher;
 var co = require('co');
 var fs = require('fs');
 var thunkify = require('thunkify');
@@ -9,8 +9,8 @@ var eventWrap = require('co-event-wrap');
 var should = require('should');
 var net126 = require('../mockers/126');
 
-var username = '';
-var password = '';
+var username = 'zhangdapeng89@126.com';
+var password = 'xxxxxxs';
 
 describe('126 Fetcher',function(){
   it('test list',function *(){
