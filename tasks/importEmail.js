@@ -295,7 +295,7 @@ function *run(uid){
       var m = __fetchers[i];
       if(m.test(username)){
         
-        var fetcher = new m.Fetcher({'cookie':cookie});
+        var fetcher = new m.Fetcher({'cookie':cookie,'date':moment(mailInfo.last_import).toDate()});
         var ev = eventWrap(fetcher);
         var i = 0;
         ev.on('message', function* (data) {
@@ -303,8 +303,6 @@ function *run(uid){
           var parse_res = [];
           try{
             debug('Email Subject:',data['subject']);
-            // debug('Email Content:',data['content']);
-            yield writeFile(__dirname + '/../test/data/data_'+i+'_html.txt',data['content']);
             parse_res = yield parseBill(data['subject'],data['content']);
           }catch(e){
             //parser Error 暂未处理  处理后会导致整个循环的parse终止
@@ -342,11 +340,7 @@ function *run(uid){
               return false;
             }
           }
-          
-          //如果需要进行数据插入更新操作
-          //处理逻辑
-          debug(parse_res);
-          
+          return;
         });
 
         ev.on('error', function* (error) {
