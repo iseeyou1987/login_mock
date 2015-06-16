@@ -44,6 +44,10 @@ function *getCookie(username, password) {
   var preResult = yield request(plgUrl);
   preResult = JSON.parse(_.first(preResult).toString());
   debug('pre login result:\n %j \n', preResult);
+  if(preResult['retcode'] == 101){
+    throw new Error(preResult['reason']);
+    return;
+  }
   var lgUrl = 'http://login.sina.com.cn/sso/login.php?client=ssologin.js(v1.4.18)&_=' + (+new Date());
   var makePassword = function () {
     var RSAKey = new sinaSSOEncoder.RSAKey();
@@ -80,6 +84,10 @@ function *getCookie(username, password) {
   debug('login header:\n %j \n', loginResults[1].headers);
   var ret = JSON.parse(loginResults[0].toString());
   debug('login result:\n %j \n', ret);
+  if(ret['retcode'] == 101){
+    throw new Error(ret['reason']);
+    return;
+  }
   _addck(loginResults[1]);
   if (ret.retcode !== '0' || !ret.uid) {
     return false;
