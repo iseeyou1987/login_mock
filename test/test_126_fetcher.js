@@ -8,9 +8,10 @@ var readFile = thunkify(fs.readFile);
 var eventWrap = require('co-event-wrap');
 var should = require('should');
 var net126 = require('../mockers/126');
+var moment = require('moment');
 
-var username = 'zhangdapeng89@126.com';
-var password = 'xxxxxxs';
+var username = 'zz@126.com';
+var password = 'zz';
 
 describe('126 Fetcher',function(){
   it('test list',function *(){
@@ -19,15 +20,13 @@ describe('126 Fetcher',function(){
     }catch(e){
       console.log('Get Cookie Error:',e);
     }
-    
-    var fetcher = new Fetcher({'cookie':cookie});
+
+    var fetcher = new Fetcher({'cookie':cookie,'date':moment('2015-05-10').toDate()});
     var ev = eventWrap(fetcher);
     ev.on('message', function* (data) {
       data.should.have.property('subject');
       data.should.have.property('content');
       data.should.have.property('date');
-      
-      console.log('data:',data);
     });
 
     ev.on('error', function* (data) {
