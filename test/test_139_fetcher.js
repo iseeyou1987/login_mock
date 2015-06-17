@@ -11,8 +11,8 @@ var net139 = require('../mockers/139');
 var debug = require('debug')('139');
 var moment = require('moment');
 
-var username = '15000711265@139.com';
-var password = 'zhangda890126';
+var username = 'zzzz@139.com';
+var password = 'zzzz';
 
 describe('139 Fetcher',function(){
   it('test list',function *(){

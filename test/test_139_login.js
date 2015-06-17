@@ -6,8 +6,8 @@ var thunkify = require('thunkify');
 var writeFile = thunkify(fs.writeFile);
 var debug = require('debug')('139_login');
 
-var username = 'xxxxxxxxx@139.com';
-var password = 'zzzzzzzzzzzz';
+var username = 'zzzz@139.com';
+var password = 'zzzz';
 
 describe('139 login',function(){
   it('get cookie',function *(){
