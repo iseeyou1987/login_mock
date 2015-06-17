@@ -8,11 +8,11 @@ var readFile = thunkify(fs.readFile);
 var eventWrap = require('co-event-wrap');
 var should = require('should');
 var net139 = require('../mockers/139');
-var debug = require('debug');
+var debug = require('debug')('139');
+var moment = require('moment');
 
-
-var username = 'xxxxxxxxxxxx@139.com';
-var password = 'xxxxxxxxxxxxx';
+var username = '15000711265@139.com';
+var password = 'zhangda890126';
 
 describe('139 Fetcher',function(){
   it('test list',function *(){
@@ -23,7 +23,7 @@ describe('139 Fetcher',function(){
       console.log('Get Cookie Error:',e);
     }
 
-    var fetcher = new Fetcher({'cookie':cookie});
+    var fetcher = new Fetcher({'cookie':cookie,'date':moment('2015-05-10').toDate()});
     var ev = eventWrap(fetcher);
 
     var ev = eventWrap(fetcher);
@@ -31,8 +31,6 @@ describe('139 Fetcher',function(){
       data.should.have.property('subject');
       data.should.have.property('content');
       data.should.have.property('date');
-      
-      console.log('data:',data['content']);
     });
 
     ev.on('error', function* (data) {
