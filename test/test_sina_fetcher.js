@@ -11,8 +11,8 @@ var netsina = require('../mockers/sina');
 var moment = require('moment');
 var debug = require('debug')('sina_fetcher');
 
-var username = 'zhangdapeng89@sina.cn';
-var password = 'QWE123;;';
+var username = 'zzzz@sina.cn';
+var password = 'zzzz';
 
 describe('sina Fetcher',function(){
   it('test list',function *(){
