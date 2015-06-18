@@ -37,7 +37,8 @@ function *doLogin(username,password){
   var login_data = {
     'username':username,
     'password':password
-  }
+  };
+
   var res = yield request(entry_url,{
     method:'POST',
     data:login_data,
@@ -72,4 +73,4 @@ module.exports = {
   test: function (str) {
     return /.*@163\.com?$/.test(str);
   }
-}
+};
