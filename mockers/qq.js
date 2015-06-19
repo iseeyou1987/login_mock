@@ -229,6 +229,19 @@ function *doLogin(username,password){
    * 登录提交 
    */
   var login_url = 'https://ssl.ptlogin2.qq.com/login';
+  var u1_url = 'http://mail.qq.com/cgi-bin/login';
+  var u1_data = {
+    vt:'passport',
+    vm:'wpt',
+    ft:'ptlogin',
+    errtemplate:'dm_loginpage',
+    aliastype:'other',
+    dmtype:'domain',
+    loginEntry:1,
+    target:'',
+    account:username
+  }
+  u1_url = [u1_url, queryString.encode(u1_data)].join('?');
   var login_data = {
     'u':username,
     'verifycode':_verifycode,
@@ -236,7 +249,7 @@ function *doLogin(username,password){
     'pt_verifysession_v1':_pt_verifysession_v1,
     'p':_p,
     'pt_randsalt':0,
-    'u1':'https://mail.qq.com/cgi-bin/login?vt=passport&vm=wpt&ft=loginpage&target=&account='+username,
+    'u1':u1_url,
     'ptredirect':1,
     'h':1,
     't':1,
@@ -253,6 +266,7 @@ function *doLogin(username,password){
   };
 
   login_url = [login_url,queryString.encode(login_data)].join('?');
+  debug('login_url:',login_url);
 
   try{
     var res = yield request(login_url,{
@@ -265,6 +279,7 @@ function *doLogin(username,password){
       }
     });
     _addck(res[1]);
+    debug('login res:',res[0].toString());
     //执行返回的结果 获取成功登录的跳转地址
     eval(res[0].toString());
   }catch(err){
