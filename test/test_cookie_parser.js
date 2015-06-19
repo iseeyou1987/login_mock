@@ -10,7 +10,7 @@ describe('parser Cookie',function(){
     cookieStr = cookieStr.toString();
     try{
       var cookieObj = cookieParser.parse(cookieStr);
-      console.log('cookieObj:',cookieObj['Coremail.sid']);
+      console.log('cookieObj:',cookieObj);
     }catch(error){
       debug(error.stack);
     }
