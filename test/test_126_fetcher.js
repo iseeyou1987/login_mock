@@ -7,7 +7,7 @@ var thunkify = require('thunkify');
 var readFile = thunkify(fs.readFile);
 var eventWrap = require('co-event-wrap');
 var should = require('should');
-var net126 = require('../mockers/126');
+var net = require('../mockers/126');
 var moment = require('moment');
 
 var username = 'zz@126.com';
@@ -16,7 +16,7 @@ var password = 'zz';
 describe('126 Fetcher',function(){
   it('test list',function *(){
     try{
-      var cookie = yield net126.getCookie(username,password);
+      var cookie = yield net.getCookie(username,password);
     }catch(e){
       console.log('Get Cookie Error:',e);
     }
