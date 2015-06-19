@@ -15,6 +15,7 @@ var cookie = require('cookie');
 var queryString = require('querystring');
 var Encryption = require('../lib/qqEncryption');
 var readline = require('readline');
+var debug = require('debug')('qq_login');
 
 //用户输入的验证码
 var set_captcha_code = function (callback){
@@ -26,24 +27,23 @@ var set_captcha_code = function (callback){
           res=res.toString();
           res = JSON.parse(res.toString());
           if(!res['code']){
-            // console.log('Wating。。。。。。。');
+            debug('Waitng input captcha');
           }else{
-            verifycode = res['code'];
             clearInterval(captcha_code);
-            resolve(verifycode);
+            resolve(res['code']);
           }
         }catch(err){
-          console.log(err.stack);
+          debug(err.stack);
         }
       });
-      return verifycode;
     },100);
   });
-}
+};
 
 function *doLogin(username,password){
+  var email = username.split('@');
+  username = email[0];
 
-  
   var _user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.76 Safari/537.36';
   var _pt_login_sig = '';
   var _verifycode = '';
@@ -75,15 +75,15 @@ function *doLogin(username,password){
         try{
           _p = Encryption.getEncryption(password, _salt, _verifycode, false);
         }catch(err){
-          console.log(err.stack);
+          debug('ptui_checkVC Error:',err.stack);
         }
         break;
     }
-  }
+  };
 
   var ptuiCB = function(l, o, b, k, d, a){
     redirect_url = b;
-  }
+  };
 
   var _ckstr = function () {
     return _.uniq(__cookies)
@@ -97,7 +97,7 @@ function *doLogin(username,password){
           }
           return cookie.serialize(c[0], c[1],{'encode':encode});
         }catch(error){
-          console.log(error);
+          debug('_ckstr Error:',error.stack);
         }
         
       }).join('; ');
@@ -115,9 +115,9 @@ function *doLogin(username,password){
         }
       });
     }catch(err){
-      console.log(err);
+      debug('_set_login_sig Error:',err.stack);
     }
-  }
+  };
 
   var _set_verifysession = function(){
     try{
@@ -128,9 +128,9 @@ function *doLogin(username,password){
         }
       });
     }catch(err){
-      console.log(err);
+      debug('_set_verifysession Error:',err.stack);
     }
-  }
+  };
 
   
   /**
@@ -146,7 +146,7 @@ function *doLogin(username,password){
       }
     });
   }catch(err){
-    console.log(err.stack);
+    debug('第一次请求登录页面 Error:',err.stack);
     return false;
   }
   _addck(res[1]);
@@ -167,7 +167,7 @@ function *doLogin(username,password){
     'login_sig':_pt_login_sig,
     'u1':'https://mail.qq.com/cgi-bin/login?vt=passport&vm=wpt&ft=loginpage&target=',
     'r':Math.random()
-  }
+  };
   var check_url = 'https://ssl.ptlogin2.qq.com/check';
   check_url = [check_url, queryString.encode(check_data)].join('?');
   var res = yield request(check_url,{
@@ -177,7 +177,8 @@ function *doLogin(username,password){
       'Host':'ssl.ptlogin2.qq.com',
       'Cookie':_ckstr(),
       'User-Agent':_user_agent
-    }
+    },
+    timeout:10000
   });
   _addck(res[1]);
 
@@ -195,7 +196,7 @@ function *doLogin(username,password){
           }
         });
       }catch(err){
-        console.log(err.stack);
+        debug('对check结果做判断 Error:',err.stack);
       }
       _addck(image_res[1]);
 
@@ -206,12 +207,11 @@ function *doLogin(username,password){
         var captcha_path = './'+username+'_captcha_code.jpg';
         var res = yield writeFile(captcha_path,image_res[0]);  
       }catch(err){
-        console.log(err.stack);
+        debug(err.stack);
       }
-      console.log('验证码地址:',captcha_path);
-      console.log('请将图片中的验证码输入到此文件：captcha_code.json');
+      debug('验证码地址:',captcha_path);
+      debug('请将图片中的验证码输入到此文件：captcha_code.json');
       
-
       //获取验证码的cookie里面
       _set_verifysession();
       ///====================获取验证码
@@ -221,10 +221,9 @@ function *doLogin(username,password){
     _p = Encryption.getEncryption(password,_salt,_verifycode,false);
 
   }catch(err){
-    console.log(err.stack);
+    debug('ptui_checkVC Error:',err.stack);
     return false;
   }
-  
 
   /**
    * 登录提交 
@@ -269,13 +268,17 @@ function *doLogin(username,password){
     //执行返回的结果 获取成功登录的跳转地址
     eval(res[0].toString());
   }catch(err){
-    console.log(err.stack);
+    debug('登录提交 Error:',err.stack);
     return false;
   }
 
   /**
    * 验证check_sig并获取跳转地址
    */
+  if(!redirect_url){
+    throw new Error('登录失败');
+  }
+
   try{
     var res = yield request(redirect_url,{
       method:'GET',
@@ -286,6 +289,8 @@ function *doLogin(username,password){
         'User-Agent':_user_agent
       }
     });
+
+    debug(res);
     _addck(res[1]);
     var location_url = '';
 
@@ -293,7 +298,7 @@ function *doLogin(username,password){
       location_url = res[1]['headers']['location'];
     }
   }catch(err){
-    console.log(err.stack);
+    debug('验证check_sig Error:',err.stack);
     return false;
   }
 
@@ -322,8 +327,17 @@ function *doLogin(username,password){
       var r = javascript[1].match(/targetUrl\+="(.*?)";/g,'$1');
       r = r[0].replace(/targetUrl\+="(.*?)";/g,'$1');
       targetUrl = targetUrl+r;
+      var tmp_targetUrl = targetUrl.split('?');
+      if(tmp_targetUrl[1]){
+        var tmp_targetUrl_arr = queryString.decode(tmp_targetUrl[1]);
+        if(tmp_targetUrl_arr['sid']){
+          var tmp_arr = [];
+          tmp_arr.push('Location_sid='+tmp_targetUrl_arr['sid']);
+          __cookies = __cookies.concat(tmp_arr);
+        }
+      }
     }catch(err){
-      console.log(err.stack);
+      debug(err.stack);
       return false;
     }
 
@@ -340,16 +354,16 @@ function *doLogin(username,password){
         _addck(target_res[1]);
 
       }catch(err){
-        console.log(er.stack);
+        debug(err.stack);
         return false;
       }
     }else{
-      console.error(new Error('目标地址不存在'));
+      debug(new Error('目标地址不存在'));
       return false;
     }
     
   }else{
-    console.error(new Error('302跳转地址不存在'));
+    debug(new Error('302跳转地址不存在'));
     return false;
   }
   
@@ -361,4 +375,4 @@ module.exports = {
   test: function (str) {
     return /.*@qq\.com?$/.test(str);
   }
-}
+};
