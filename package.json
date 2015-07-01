@@ -41,7 +41,7 @@
     "urllib": "^2.3.5",
     "xml": "^1.0.0",
     "xml2js": "^0.4.8",
-    "xml2json": "^0.6.2"
+    "xml2json": "git://github.com/zhangda89/node-xml2json.git"
   },
   "devDependencies": {
     "should": "^6.0.3"
