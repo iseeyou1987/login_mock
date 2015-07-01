@@ -16,6 +16,9 @@
       "name"      : "mock.qeeniao.dev",
       "script"    : "test.js",
       "watch":['views','api','tasks','lib','mockers'],
+      "exec_mode" : "fork",
+      "instances" : 1,                // Optional: Scale your app by 4
+      "max_memory_restart" : "100M",
       "node_args":["--harmony"],
       "log_date_format"  : "YYYY-MM-DD HH:mm:ss Z",
       "error_file" : "./log/child-err.log",
