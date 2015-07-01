@@ -195,8 +195,25 @@ var confirmInsertData = function(records,uid){
   });
 }
 
-var insertRecord = function(records,uid){
+var updateBillData = function(uid,data){
+  return new Promise(function(resolve,reject){
+    var sql = "UPDATE qeeniao.email_import_info SET data = '${data}' WHERE user_id = ${user_id}";
+    sql = _.template(sql)({
+      "user_id":uid,
+      "data":data
+    });
+    debug('sql:',sql);
+    mysql.strictQuery(sql,function(err,res){
+      if(err){
+        return reject(err);
+      }
+      return resolve(res);
+    });
+  });
   
+}
+
+var insertRecord = function(uid,records){
   return new Promise(function(resolve,reject){
     var insert_records = [];
     async.mapSeries(records,function(r,callback){
@@ -219,15 +236,19 @@ var insertRecord = function(records,uid){
         };
 
         insert_records.push({
-          uuid: r.uuid,
-          user_id: uid,
-          rt_id: res.recordTypeId,
-          account_id: res.accountId,
-          money: money,
-          content: r.content,
-          ctime: r.ctime,
-          rtime: r.rtime,
-          mtime: r.mtime
+          'uuid': r.uuid,
+          'user_id': uid,
+          'rt_id': res.recordTypeId,
+          'account_id': res.accountId,
+          'money': money,
+          'content': r.content,
+          'bank_name': r.bank_name,
+          'bank_code': r.bank_code,
+          'limit_money':r.limit_money,
+          'expired_date':r.expired_date,
+          'ctime': r.ctime,
+          'rtime': r.rtime,
+          'mtime': r.mtime
         });
         callback(null,[]);
       });
@@ -243,13 +264,20 @@ var insertRecord = function(records,uid){
  * @param {[type]} uid           [description]
  * @yield {[type]} [description]
  */
-function *run(uid){
+function *run(app,task,callback){
+  debug('========================开始运行importEmail========================');
+  var uid = task['uid'];
+  if(!uid){
+    throw new Error('任务参数错误!');
+    return;
+  }
   try{
     var mailInfo = yield getAccount(uid);  
   }catch(e){
     throw e;
     return;
   }
+  debug('mailInfo:',mailInfo);
   
   var username = mailInfo['email'];
   var password = fog.decode(mailInfo['password']);
@@ -260,113 +288,167 @@ function *run(uid){
 
   var readdir = thunkify(fs.readdir);
 
-  var mockers_files = yield readdir(__mockerDir);
-  var fetchers_files = yield readdir(__fetcherDir);
-  var parsers_files = yield readdir(__parserDir);
+  try{
+    var mockers_files = yield readdir(__mockerDir);
+    var fetchers_files = yield readdir(__fetcherDir);
+    var parsers_files = yield readdir(__parserDir);
 
-  __mockers = yield loadMockers(mockers_files);
-  __fetchers = yield loadFetchers(fetchers_files);
-  __parsers = yield loadParsers(parsers_files);
+    __mockers = yield loadMockers(mockers_files);
+    __fetchers = yield loadFetchers(fetchers_files);
+    __parsers = yield loadParsers(parsers_files);
+  }catch(error){
+    debug("readdir __mockers error",error.stack);
+    throw error;
+  }
+  
 
   var _found = false;
   var cookie = '';
-  for (var i = 0; i < __mockers.length; i++) {
-    var m = __mockers[i];
-    if (m.test(username)) {
-      _found = true;
+  debug("========================mockers 测试========================");
+  console.log('__mockers:',__mockers);
+  try{
+    for (var i = 0; i < __mockers.length; i++) {
+      var m = __mockers[i];
+      debug("m:",m);
+      if (m.test(username)) {
+        _found = true;
 
-      try{
-        cookie = yield m.getCookie(username, password);
-      }catch(err){
-        throw new Error(err);
-        return;
+        try{
+          debug("========================开始模拟登录========================");
+          cookie = yield m.getCookie(username, password);
+          debug('cookie:',cookie);
+        }catch(err){
+          throw new Error(err);
+          return;
+        }
+        break;
       }
-      break;
     }
+  }catch(error){
+    debug("__mockers error",error);
+    throw error;
   }
+  
+
   if (!_found) {
+    debug("No mocker found");
     throw new Error('No mocker found.');
     return;
   }
 
-  if(cookie){
-    var fetcher_state = false;
-    for(var i=0;i<__fetchers.length;i++){
-      var m = __fetchers[i];
-      if(m.test(username)){
-        
-        var fetcher = new m.Fetcher({'cookie':cookie,'date':moment(mailInfo.last_import).toDate()});
-        var ev = eventWrap(fetcher);
-        var i = 0;
-        ev.on('message', function* (data) {
-          i++;
-          var parse_res = [];
-          try{
-            debug('Email Subject:',data['subject']);
-            parse_res = yield parseBill(data['subject'],data['content']);
-          }catch(e){
-            //parser Error 暂未处理  处理后会导致整个循环的parse终止
-          }
+  if (_.isEmpty(cookie)) {
+    throw new Error('登录失败');
+    return;
+  }
 
-          //判断是否需要插入数据
-          var need_insert_state = false;
-          debug('parse_res:',parse_res);
-          if(!_.isUndefined(parse_res['records']) && !_.isEmpty(parse_res['records'])){
-            try{
-              need_insert_state = yield confirmInsertData(parse_res['records'],uid);
-              debug('Need Insert Data State:',need_insert_state);
-            }catch(e){
-              throw(e);
-              return false;
+  var fetcher_state = false;
+  debug("========================__fetchers 测试========================");
+  console.log('__fetchers List:',__fetchers);
+  for(var i=0;i<__fetchers.length;i++){
+    var m = __fetchers[i];
+    console.log('__fetchers:',m);
+    //临时数据存储
+    var tmp = [];
+    if(m.test(username)){
+      console.log('Select __fetchers:',m);
+      var fetcher = new m.Fetcher({'cookie':cookie,'date':moment(mailInfo.last_import).toDate()});
+      var ev = eventWrap(fetcher);
+      var i = 0;
+      
+      ev.on('message', function* (data) {
+        i++;
+        var parse_res = [];
+        try{
+          debug('Email Subject:',data['subject']);
+          parse_res = yield parseBill(data['subject'],data['content']);
+        }catch(e){
+          //parser Error 暂未处理  处理后会导致整个循环的parse终止
+        }
+
+        //判断是否需要插入数据
+        var need_insert_state = true;
+        // debug('parse_res:',parse_res);
+        // if(!_.isUndefined(parse_res['records']) && !_.isEmpty(parse_res['records'])){
+        //   try{
+        //     need_insert_state = yield confirmInsertData(parse_res['records'],uid);
+        //     debug('Need Insert Data State:',need_insert_state);
+        //   }catch(e){
+        //     throw(e);
+        //     return false;
+        //   }
+        // }
+        
+        var insert_res = [];
+        if(need_insert_state){
+          try{
+            if(_.has(parse_res,'records') && !_.isEmpty(parse_res['records'])){
+              insert_res = yield insertRecord(uid,parse_res['records']);
             }
+            debug('Insert Result:',insert_res);
+          }catch(e){
+            throw(e);
+            return false;
+          }
+        }
+
+        if(!_.isEmpty(insert_res)){
+          try{
+
+            _.forEach(insert_res,function(i){
+              tmp.push(i);
+            });
+
+            debug('Tmp:',tmp);
+            
+            //var import_res = yield importData(insert_res);
+          }catch(e){
+            throw(e);
+            return false;
+          }
+        }
+        
+        return;
+      });
+
+      ev.on('error', function* (error) {
+        throw error;
+      });
+
+      ev.on('end', function* (data){
+        //更新----问题这里的数据总是为空 不正常
+        try{
+          debug('Result:',tmp);
+          if(!_.isEmpty(tmp)){
+            yield updateBillData(uid,JSON.stringify(tmp));
+          }else{
+            debug('获取到的结果为空:',tmp);
+            yield updateBillData(uid,'');
           }
           
-          var insert_res = [];
-          if(need_insert_state){
-            try{
-              insert_res = yield insertRecord(parse_res['records'],uid);
-              debug('Insert Result:',insert_res);
-            }catch(e){
-              throw(e);
-              return false;
-            }
-          }
+        }catch(error){
+          throw(error);
+        }
+        callback(null);
+        return true;
+      });
 
-          if(!_.isEmpty(insert_res)){
-            try{
-              var import_res = yield importData(insert_res);
-            }catch(e){
-              throw(e);
-              return false;
-            }
-          }
-          return;
-        });
+      var res = yield fetcher.getContent();
 
-        ev.on('error', function* (error) {
-          throw error;
-        });
-
-        ev.on('end', function* (data){
-          //更新
-          return true;
-        });
-
-        var res = yield fetcher.getContent();
-
-        fetcher_state = true;
-        break;
-      }
-    }
-
-    //fresh
-    var fresh_res = freshLastImport(uid);
-
-    if(!fetcher_state){
-      throw new Error('Fetcher Not Match');
-      return;
+      fetcher_state = true;
+      break;
     }
   }
+
+  //fresh
+  var fresh_res = freshLastImport(uid);
+
+  if(!fetcher_state){
+    throw new Error('Fetcher Not Match');
+    return;
+  }
+
+
+  
 }
 
-module.exports = co.wrap(run);
+module.exports.run = co.wrap(run);
