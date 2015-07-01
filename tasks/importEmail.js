@@ -268,14 +268,12 @@ function *run(app,task,callback){
   debug('========================开始运行importEmail========================');
   var uid = task['uid'];
   if(!uid){
-    throw new Error('任务参数错误!');
-    return;
+    return callback(new Error('任务参数错误!'));
   }
   try{
     var mailInfo = yield getAccount(uid);  
   }catch(e){
-    throw e;
-    return;
+    return callback(e);
   }
   debug('mailInfo:',mailInfo);
   
@@ -298,7 +296,7 @@ function *run(app,task,callback){
     __parsers = yield loadParsers(parsers_files);
   }catch(error){
     debug("readdir __mockers error",error.stack);
-    throw error;
+    return callback(error);
   }
   
 
@@ -318,24 +316,24 @@ function *run(app,task,callback){
           cookie = yield m.getCookie(username, password);
           debug('cookie:',cookie);
         }catch(err){
-          throw new Error(err);
+          return callback(err);
         }
         break;
       }
     }
   }catch(error){
     debug("__mockers error",error);
-    throw error;
+    return callback(err);
   }
   
 
   if (!_found) {
     debug("No mocker found");
-    throw new Error('No mocker found.');
+    return callback(new Error('No mocker found.'));
   }
 
   if (_.isEmpty(cookie)) {
-    throw new Error('登录失败');
+    return callback(new Error('登录失败'));
   }
 
   var fetcher_state = false;
@@ -383,7 +381,7 @@ function *run(app,task,callback){
             }
             debug('Insert Result:',insert_res);
           }catch(e){
-            throw(e);
+            return callback(e);
           }
         }
 
@@ -398,7 +396,7 @@ function *run(app,task,callback){
             
             //var import_res = yield importData(insert_res);
           }catch(e){
-            throw(e);
+            return callback(e);
           }
         }
         
@@ -421,10 +419,9 @@ function *run(app,task,callback){
           }
           
         }catch(error){
-          throw(error);
+          return callback(error);
         }
-        callback(null);
-        return true;
+        return callback(null);
       });
 
       var res = yield fetcher.getContent();
@@ -438,12 +435,8 @@ function *run(app,task,callback){
   var fresh_res = freshLastImport(uid);
 
   if(!fetcher_state){
-    throw new Error('Fetcher Not Match');
-    return;
+    return callback(new Error('Fetcher Not Match'));
   }
-
-
-  
 }
 
 module.exports.run = co.wrap(run);
