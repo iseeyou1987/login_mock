@@ -13,21 +13,17 @@
 
     // First application
     {
-      "name"      : "login_mock",
+      "name"      : "mock.qeeniao.com",
       "script"    : "app.js",
-      "watch":true,
+      "watch":['views','api','tasks','lib','mockers'],
       "node_args":["--harmony"],
-      "log_date_format"  : "YYYY-MM-DD HH:mm Z",
+      "log_date_format"  : "YYYY-MM-DD HH:mm:ss Z",
       "error_file" : "./log/child-err.log",
       "out_file":"./log/child-out.log",
       "env": {
-        COMMON_VARIABLE: "true"
-      },
-      "env_production" : {
         NODE_ENV: "production"
       }
     }
-
   ],
 
 
