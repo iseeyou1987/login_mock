@@ -138,6 +138,7 @@ function *getCookie(username, password) {
       Referer: 'http://m0.mail.sina.com.cn/classic/index.php',
       Cookie: _ckstr()
     },
+    timeout:10000,
     data: {
       c: +new Date(),
       d: (+new Date()) + 240,
