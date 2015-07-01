@@ -10,6 +10,7 @@ var oauthModel =  require('./lib/oauth_model');
 var render = require('koa-swig');
 var path = require('path');
 var app = koa();
+var TaskEngine = require('./lib/task_engine');
 
 app.oauth = oauthserver({
   model: oauthModel,
@@ -29,17 +30,42 @@ app.context.render = render({
   ext: 'html'
   // locals: locals,
   // filters: filters,
-  // tags: tags,	
+  // tags: tags,  
   // extensions: extensions
 });
+
+/**
+ * 统一处理默认Error
+ */
+app.use(function *(next) {
+  try {
+    yield next;
+  } catch (err) {
+    console.log('err.status',err);
+    this.status = err.status || 500;
+    this.body = {
+      name: "QeeniaoApiServerError",
+      code: err.status || 600,
+      message: err.message || "Server internal error.",
+      success: false
+    }
+  }
+});
+
 
 app.use(app.oauth.authorise());
 app.use(serve('./static/'));
 app.use(logger());
 app.use(router.routes());
-
-app.on('apiError', function(err, ctx){
-  console.log('apiError server error:', err, ctx);
-});
-
 app.listen(3050);
+
+//后台任务注册
+var taskEngine = new TaskEngine({
+  app: app
+});
+taskEngine.register("mockImportMail", require("./tasks/importEmail"));
+try{
+  taskEngine.run();
+}catch(error){
+  console.log('error:',error);
+}
