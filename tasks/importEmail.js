@@ -319,7 +319,6 @@ function *run(app,task,callback){
           debug('cookie:',cookie);
         }catch(err){
           throw new Error(err);
-          return;
         }
         break;
       }
@@ -333,12 +332,10 @@ function *run(app,task,callback){
   if (!_found) {
     debug("No mocker found");
     throw new Error('No mocker found.');
-    return;
   }
 
   if (_.isEmpty(cookie)) {
     throw new Error('登录失败');
-    return;
   }
 
   var fetcher_state = false;
@@ -387,7 +384,6 @@ function *run(app,task,callback){
             debug('Insert Result:',insert_res);
           }catch(e){
             throw(e);
-            return false;
           }
         }
 
@@ -403,7 +399,6 @@ function *run(app,task,callback){
             //var import_res = yield importData(insert_res);
           }catch(e){
             throw(e);
-            return false;
           }
         }
         
@@ -411,7 +406,7 @@ function *run(app,task,callback){
       });
 
       ev.on('error', function* (error) {
-        throw error;
+        return callback(error);
       });
 
       ev.on('end', function* (data){
