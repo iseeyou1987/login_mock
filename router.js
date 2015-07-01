@@ -5,11 +5,12 @@
 var router = require('koa-router')();
 var koaBody = require('koa-body');
 var queryString = require('querystring');
+var Admin = require('./api/Admin');
 
 router.post('/cookies',koaBody(),require('./api/cookie'));
 
-router.all('/',function *(next){
-  this.body = 'Hello World!';
-});
+router.all('/',koaBody(), Admin.index);
+router.post('/mail/import', Admin.mailImport);
+router.post('/mail/billquery', Admin.mailBill);
 
 module.exports = router;
