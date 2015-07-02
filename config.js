@@ -1,11 +1,14 @@
 "use strict";
 
+var env = process.env['NODE_ENV'] || 'production';
+env = env.toLowerCase();
+
 module.exports = {
   mysql : {
-    hostname: "127.0.0.1",
-    username: "root",
-    password: "123456",
-    database: "qeeniao",
+    hostname: (env === 'dev') ? "127.0.0.1" : "qeeniaodb.mysql.rds.aliyuncs.com",
+    username: (env === 'dev') ? "root" : "zhaolei",
+    password: (env === 'dev') ? "123456" : "6070039",
+    database: (env === 'dev') ? "qeeniao" : "qeeniao",
     port : 3306,
     poolSize : 10
   },
